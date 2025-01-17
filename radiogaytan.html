@@ -1,0 +1,602 @@
+<html><head><base href=".">
+<meta charset="UTF-8">
+<title>Rock Cl&#xe1;sico - Radio &amp; Streaming</title>
+<style>
+  :root {
+    --primary-color: #1a1a1a;
+    --accent-color: #d63031;
+    --text-color: #ffffff;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--primary-color);
+    color: var(--text-color);
+    background-image: url('https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  .logo {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--accent-color);
+  }
+
+  .player-controls {
+    background: rgba(0,0,0,0.8);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+  }
+
+  .now-playing {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .album-art {
+    width: 100px;
+    height: 100px;
+    background: #333;
+    border-radius: 5px;
+    margin-right: 20px;
+  }
+
+  .track-info h3 {
+    margin-bottom: 5px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .btn {
+    background: var(--accent-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .btn:hover {
+    background: #b52526;
+  }
+
+  .playlist {
+    background: rgba(0,0,0,0.8);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+
+  .song-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+  }
+
+  .song-item:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .song-info {
+    flex-grow: 1;
+    margin-left: 10px;
+  }
+
+  .duration {
+    color: #888;
+  }
+
+  .albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .album-card {
+    background: rgba(0,0,0,0.8);
+    padding: 15px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+  }
+
+  .album-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .album-image {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #333;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+
+  .admin-panel {
+    background: rgba(0,0,0,0.9);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+
+  .admin-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .file-upload {
+    margin: 10px 0;
+  }
+
+  .file-upload label {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .stream-url {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    background: #333;
+    border: 1px solid #666;
+    color: white;
+    border-radius: 4px;
+  }
+
+  .mini-player {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.9);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 5px;
+    background: #333;
+    border-radius: 5px;
+    margin: 10px 0;
+    position: relative;
+  }
+
+  .progress {
+    width: 30%;
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: 5px;
+    transition: width 0.1s linear;
+  }
+
+  .playlist-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--accent-color);
+  }
+
+  .album-management {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+  }
+
+  .album-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="overlay"></div>
+  <div class="container">
+    <header>
+      <div class="logo">Rock Cl&#xe1;sico Radio</div>
+      <button class="btn" id="adminToggle">Admin Panel</button>
+    </header>
+
+    <div class="player-controls">
+      <div class="now-playing">
+        <div class="album-art"></div>
+        <div class="track-info">
+          <h3 id="currentSongTitle">Selecciona una canci&#xf3;n</h3>
+          <p id="currentArtist"></p>
+          <div class="progress-bar">
+            <div class="progress"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="prevBtn">Anterior</button>
+        <button class="btn" id="playBtn">Play</button>
+        <button class="btn" id="nextBtn">Siguiente</button>
+        <button class="btn" id="radioBtn">Radio</button>
+        <button class="btn" id="popoutBtn">Abrir Reproductor</button>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel" style="display: none;">
+      <h2>Panel de Administraci&#xf3;n</h2>
+      <h3 class="playlist-title">Gestionar Repertorio Musical</h3>
+      <div class="file-upload">
+        <label>Seleccionar Artista:</label>
+        <select id="artistSelect">
+          <option value="pink-floyd">Pink Floyd</option>
+          <option value="led-zeppelin">Led Zeppelin</option>
+          <option value="nirvana">Nirvana</option>
+          <option value="janis-joplin">Janis Joplin</option>
+          <option value="the-doors">The Doors</option>
+        </select>
+      </div>
+      <div class="file-upload">
+        <label>Subir M&#xfa;sica:</label>
+        <input type="file" accept="audio/*" multiple id="musicUpload">
+      </div>
+      <div class="file-upload">
+        <label>Subir Im&#xe1;genes:</label>
+        <input type="file" accept="image/*" multiple id="imageUpload">
+      </div>
+      <div class="stream-settings">
+        <label>URL del Stream en Vivo:</label>
+        <input type="url" class="stream-url" id="streamUrl" placeholder="https://stream.example.com/live">
+        <button class="btn" id="saveStream">Guardar Stream</button>
+      </div>
+      <div class="album-management">
+        <h3 class="playlist-title">Gestionar &#xc1;lbumes</h3>
+        <div class="album-form">
+          <input type="text" id="albumTitle" placeholder="T&#xed;tulo del &#xe1;lbum" class="stream-url">
+          <select id="albumArtist" class="stream-url">
+            <option value="pink-floyd">Pink Floyd</option>
+            <option value="led-zeppelin">Led Zeppelin</option>
+            <option value="nirvana">Nirvana</option>
+            <option value="janis-joplin">Janis Joplin</option>
+            <option value="the-doors">The Doors</option>
+          </select>
+          <input type="file" id="albumCover" accept="image/*">
+          <input type="file" id="albumSongs" accept="audio/*" multiple>
+          <button class="btn" id="saveAlbum">Guardar &#xc1;lbum</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="playlist" id="playlist">
+      <h2 class="playlist-title">Repertorio Musical</h2>
+      <!-- Songs will be dynamically added here -->
+    </div>
+
+    <div class="albums-grid">
+      <div class="album-card">
+        <div class="album-image"></div>
+        <h3>The Dark Side of the Moon</h3>
+        <p>Pink Floyd</p>
+      </div>
+      <div class="album-card">
+        <div class="album-image"></div>
+        <h3>Led Zeppelin IV</h3>
+        <p>Led Zeppelin</p>
+      </div>
+      <div class="album-card">
+        <div class="album-image"></div>
+        <h3>Nevermind</h3>
+        <p>Nirvana</p>
+      </div>
+      <div class="album-card">
+        <div class="album-image"></div>
+        <h3>Pearl</h3>
+        <p>Janis Joplin</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mini-player" id="miniPlayer" style="display: none;">
+    <div class="track-info">
+      <h4 id="miniPlayerTitle">Selecciona una canci&#xf3;n</h4>
+      <p id="miniPlayerArtist"></p>
+    </div>
+    <div class="controls">
+      <button class="btn" id="miniPlayBtn">Play</button>
+    </div>
+  </div>
+
+<script>document.addEventListener('DOMContentLoaded', function () {
+  const musicLibrary = {
+    'pink-floyd': [],
+    'led-zeppelin': [],
+    'nirvana': [],
+    'janis-joplin': [],
+    'the-doors': []
+  };
+  let currentPlaylist = [];
+  let currentTrackIndex = 0;
+  let isPlaying = false;
+  let streamUrl = '';
+  let radioMode = false;
+  const audioElement = new Audio();
+  const playBtn = document.getElementById('playBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const adminToggle = document.getElementById('adminToggle');
+  const adminPanel = document.getElementById('adminPanel');
+  const musicUpload = document.getElementById('musicUpload');
+  const imageUpload = document.getElementById('imageUpload');
+  const artistSelect = document.getElementById('artistSelect');
+  const playlist = document.getElementById('playlist');
+  const streamUrlInput = document.getElementById('streamUrl');
+  const saveStreamBtn = document.getElementById('saveStream');
+  const radioBtn = document.getElementById('radioBtn');
+  const savedStreamUrl = localStorage.getItem('streamUrl');
+  const albumTitle = document.getElementById('albumTitle');
+  const albumArtist = document.getElementById('albumArtist');
+  const albumCover = document.getElementById('albumCover');
+  const albumSongs = document.getElementById('albumSongs');
+  const saveAlbumBtn = document.getElementById('saveAlbum');
+  const albumsGrid = document.querySelector('.albums-grid');
+  const albumsLibrary = {
+    'pink-floyd': [],
+    'led-zeppelin': [],
+    'nirvana': [],
+    'janis-joplin': [],
+    'the-doors': []
+  };
+  if (savedStreamUrl) {
+    streamUrlInput.value = savedStreamUrl;
+    streamUrl = savedStreamUrl;
+  }
+  function updatePlaylist() {
+    playlist.innerHTML = '<h2 class="playlist-title">Repertorio Musical</h2>';
+    const selectedArtist = artistSelect.value;
+    const songs = musicLibrary[selectedArtist];
+    songs.forEach((song, index) => {
+      const songElement = document.createElement('div');
+      songElement.className = 'song-item';
+      songElement.innerHTML = `
+        <div class="song-info">
+          <strong>${song.name}</strong>
+          <div>${artistSelect.options[artistSelect.selectedIndex].text}</div>
+        </div>
+      `;
+      songElement.addEventListener('click', () => playSong(index));
+      playlist.appendChild(songElement);
+    });
+  }
+  function playSong(index) {
+    if (isPlaying) {
+      audioElement.pause();
+    }
+    if (radioMode) {
+      audioElement.src = streamUrl;
+    } else {
+      const selectedArtist = artistSelect.value;
+      if (musicLibrary[selectedArtist] && musicLibrary[selectedArtist][index]) {
+        const song = musicLibrary[selectedArtist][index];
+        currentTrackIndex = index;
+        audioElement.src = song.url;
+        const displayTitle = song.name;
+        const displayArtist = artistSelect.options[artistSelect.selectedIndex].text;
+        document.getElementById('currentSongTitle').textContent = displayTitle;
+        document.getElementById('currentArtist').textContent = displayArtist;
+        const albumArt = document.querySelector('.album-art');
+        if (song.imageUrl) {
+          albumArt.style.backgroundImage = `url(${song.imageUrl})`;
+        } else {
+          albumArt.style.backgroundImage = `url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80')`;
+        }
+        albumArt.style.backgroundSize = 'cover';
+        albumArt.style.backgroundPosition = 'center';
+      } else {
+        console.warn('Invalid song index or empty playlist');
+        return;
+      }
+    }
+    audioElement.play().then(() => {
+      isPlaying = true;
+      playBtn.textContent = 'Pause';
+      if (radioMode) {
+        document.getElementById('currentSongTitle').textContent = 'Radio Stream';
+        document.getElementById('currentArtist').textContent = 'Live Stream';
+        const albumArt = document.querySelector('.album-art');
+        albumArt.style.backgroundImage = `url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80')`;
+        albumArt.style.backgroundSize = 'cover';
+        albumArt.style.backgroundPosition = 'center';
+      }
+    }).catch(err => {
+      console.warn('Playback failed:', err);
+      isPlaying = false;
+      playBtn.textContent = 'Play';
+    });
+  }
+  musicUpload.addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    const selectedArtist = artistSelect.value;
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      musicLibrary[selectedArtist].push({
+        name: file.name.replace(/\.[^/.]+$/, ""),
+        url: url
+      });
+    });
+    updatePlaylist();
+  });
+  imageUpload.addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    const selectedArtist = artistSelect.value;
+    files.forEach(file => {
+      const imageUrl = URL.createObjectURL(file);
+      if (musicLibrary[selectedArtist].length > 0) {
+        musicLibrary[selectedArtist][musicLibrary[selectedArtist].length - 1].imageUrl = imageUrl;
+      }
+    });
+  });
+  saveStreamBtn.addEventListener('click', () => {
+    streamUrl = streamUrlInput.value;
+    localStorage.setItem('streamUrl', streamUrl);
+    alert('Stream URL saved successfully!');
+    if (radioMode) {
+      audioElement.src = streamUrl;
+      if (isPlaying) {
+        audioElement.play();
+      }
+    }
+  });
+  playBtn.addEventListener('click', () => {
+    if (isPlaying) {
+      audioElement.pause().then(() => {
+        isPlaying = false;
+        playBtn.textContent = 'Play';
+      }).catch(err => console.warn('Pause failed:', err));
+    } else {
+      audioElement.play().then(() => {
+        isPlaying = true;
+        playBtn.textContent = 'Pause';
+      }).catch(err => console.warn('Play failed:', err));
+    }
+  });
+  prevBtn.addEventListener('click', () => {
+    if (currentTrackIndex > 0) {
+      playSong(currentTrackIndex - 1);
+    }
+  });
+  nextBtn.addEventListener('click', () => {
+    const selectedArtist = artistSelect.value;
+    if (currentTrackIndex < musicLibrary[selectedArtist].length - 1) {
+      playSong(currentTrackIndex + 1);
+    }
+  });
+  audioElement.addEventListener('timeupdate', () => {
+    const progress = audioElement.currentTime / audioElement.duration * 100;
+    document.querySelector('.progress').style.width = `${progress}%`;
+  });
+  audioElement.addEventListener('ended', () => {
+    const selectedArtist = artistSelect.value;
+    if (currentTrackIndex < musicLibrary[selectedArtist].length - 1) {
+      playSong(currentTrackIndex + 1);
+    }
+  });
+  artistSelect.addEventListener('change', updatePlaylist);
+  adminToggle.addEventListener('click', () => {
+    adminPanel.style.display = adminPanel.style.display === 'none' ? 'block' : 'none';
+  });
+  radioBtn.addEventListener('click', () => {
+    radioMode = !radioMode;
+    radioBtn.textContent = radioMode ? 'Playlist' : 'Radio';
+    if (radioMode && streamUrl) {
+      audioElement.src = streamUrl;
+      if (isPlaying) {
+        audioElement.play();
+      }
+      document.getElementById('currentSongTitle').textContent = 'Radio Stream';
+      document.getElementById('currentArtist').textContent = 'Live Stream';
+      const albumArt = document.querySelector('.album-art');
+      albumArt.style.backgroundImage = `url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80')`;
+    } else if (!radioMode) {
+      if (currentTrackIndex >= 0) {
+        playSong(currentTrackIndex);
+      }
+    }
+  });
+  function updateAlbumsGrid() {
+    albumsGrid.innerHTML = '';
+    Object.entries(albumsLibrary).forEach(([artist, albums]) => {
+      albums.forEach(album => {
+        const albumCard = document.createElement('div');
+        albumCard.className = 'album-card';
+        albumCard.innerHTML = `
+          <div class="album-image" style="background-image: url('${album.coverUrl}'); background-size: cover;"></div>
+          <h3>${album.title}</h3>
+          <p>${artist}</p>
+        `;
+        albumCard.addEventListener('click', () => {
+          artistSelect.value = artist;
+          currentTrackIndex = 0;
+          musicLibrary[artist] = album.songs;
+          updatePlaylist();
+          playSong(0);
+        });
+        albumsGrid.appendChild(albumCard);
+      });
+    });
+  }
+  saveAlbumBtn.addEventListener('click', async () => {
+    const title = albumTitle.value;
+    const artist = albumArtist.value;
+    const coverFile = albumCover.files[0];
+    const songFiles = Array.from(albumSongs.files);
+    if (!title || !coverFile || songFiles.length === 0) {
+      alert('Por favor complete todos los campos');
+      return;
+    }
+    const coverUrl = URL.createObjectURL(coverFile);
+    const songs = songFiles.map(file => ({
+      name: file.name.replace(/\.[^/.]+$/, ""),
+      url: URL.createObjectURL(file)
+    }));
+    if (albumsLibrary[artist]) {
+      albumsLibrary[artist].push({
+        title,
+        coverUrl,
+        songs
+      });
+    } else {
+      albumsLibrary[artist] = [{
+        title,
+        coverUrl,
+        songs
+      }];
+    }
+    updateAlbumsGrid();
+    albumTitle.value = '';
+    albumCover.value = '';
+    albumSongs.value = '';
+    alert('Álbum guardado exitosamente!');
+  });
+  updatePlaylist();
+  updateAlbumsGrid();
+});</script>
+</body>
+</html>
